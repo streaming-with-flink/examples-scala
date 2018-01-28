@@ -70,7 +70,7 @@ object BasicTransformations {
     splitIds.print()
 
     // execute application
-    env.execute("Compute average sensor temperature")
+    env.execute("Basic Transformations Example")
   }
 
   /** User-defined FilterFunction to filter out SensorReading with temperature below the threshold */
@@ -87,7 +87,7 @@ object BasicTransformations {
 
   }
 
-  /** User-defined MapFunction to project a sensor's id */
+  /** User-defined FlatMapFunction that splits a sensor's id String into a prefix and a number */
   class SplitIdFlatMap extends FlatMapFunction[String, String] {
 
     override def flatMap(id: String, collector: Collector[String]): Unit = id.split("_")
