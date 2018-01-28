@@ -51,7 +51,7 @@ class SensorSource extends RichParallelSourceFunction[SensorReading] {
     // emit data until being canceled
     while (running) {
 
-      // update temparature
+      // update temperature
       curFTemp = curFTemp.map( t => (t._1, t._2 + rand.nextGaussian() * 5) )
       // get current time
       val curTime = Calendar.getInstance.getTimeInMillis
