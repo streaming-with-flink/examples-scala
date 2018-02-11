@@ -18,6 +18,9 @@ object KeyedStateFunction {
     // set up the streaming execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
+    // checkpoint every 10 seconds
+    env.getCheckpointConfig.setCheckpointInterval(10 * 1000)
+
     // use event time for the application
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     // configure watermark interval
