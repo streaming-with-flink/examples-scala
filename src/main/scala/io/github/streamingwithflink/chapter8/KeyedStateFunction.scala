@@ -35,7 +35,7 @@ object KeyedStateFunction {
 
     val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
-   val alerts: DataStream[(String, Double, Double)] = keyedSensorData
+    val alerts: DataStream[(String, Double, Double)] = keyedSensorData
       .flatMap(new TemperatureAlertFunction(1.1))
 
     /* Scala shortcut to define a stateful FlatMapFunction. */
@@ -59,8 +59,8 @@ object KeyedStateFunction {
     alerts.print()
 
     // execute application
-    env.execute("Monitor Sensors")
-    }
+    env.execute("Generate Temperature Alerts")
+  }
 }
 
 /**

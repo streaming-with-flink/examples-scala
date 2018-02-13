@@ -31,8 +31,15 @@ under the License.
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<flink.version>1.4.0</flink.version>
+		<flink.version>1.5-SNAPSHOT</flink.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>Apache SNAPSHOTS</id>
+			<url>https://repository.apache.org/content/repositories/snapshots</url>
+		</repository>
+	</repositories>
 
 	<!-- 
 		
