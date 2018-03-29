@@ -1,16 +1,15 @@
-package io.github.streamingwithflink.chapter8
+package io.github.streamingwithflink.chapter7
 
 import io.github.streamingwithflink.util.{SensorReading, SensorSource, SensorTimeAssigner}
-
-import org.apache.flink.api.common.functions.RichFlatMapFunction
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.streaming.api.scala.{DataStream, KeyedStream, StreamExecutionEnvironment}
 import org.apache.flink.util.Collector
 
-object KeyedStateFunction {
+object StatefulProcessFunction {
 
   /** main() defines and executes the DataStream program */
   def main(args: Array[String]) {
@@ -36,24 +35,7 @@ object KeyedStateFunction {
     val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
     val alerts: DataStream[(String, Double, Double)] = keyedSensorData
-      .flatMap(new TemperatureAlertFunction(1.1))
-
-    /* Scala shortcut to define a stateful FlatMapFunction. */
-//    val alerts: DataStream[(String, Double, Double)] = keyedSensorData
-//      .flatMapWithState[(String, Double, Double), Double] {
-//        case (in: SensorReading, None) =>
-//          // no previous temperature defined. Just update the last temperature
-//          (List.empty, Some(in.temperature))
-//        case (in: SensorReading, lastTemp: Some[Double]) =>
-//          // compare temperature difference with threshold
-//          if (lastTemp.get > 0.0 && (in.temperature / lastTemp.get) > 1.1) {
-//            // threshold exceeded. Emit an alert and update the last temperature
-//            (List((in.id, in.temperature, lastTemp.get)), Some(in.temperature))
-//          } else {
-//            // threshold not exceeded. Just update the last temperature
-//            (List.empty, Some(in.temperature))
-//          }
-//      }
+      .process(new SelfCleaningTemperatureAlertFunction(1.1))
 
     // print result stream to standard out
     alerts.print()
@@ -67,22 +49,38 @@ object KeyedStateFunction {
   * The function emits an alert if the temperature measurement of a sensor increased by more than
   * a configured threshold compared to the last reading.
   *
+  * The function removes the state of a sensor if it did not receive an update within 1 hour.
+  *
   * @param threshold The threshold to raise an alert.
   */
-class TemperatureAlertFunction(val threshold: Double)
-    extends RichFlatMapFunction[SensorReading, (String, Double, Double)] {
+class SelfCleaningTemperatureAlertFunction(val threshold: Double)
+    extends ProcessFunction[SensorReading, (String, Double, Double)] {
 
   // the state handle object
   private var lastTempState: ValueState[Double] = _
+  private var lastTimerState: ValueState[Long] = _
 
   override def open(parameters: Configuration): Unit = {
-    // create state descriptor
+    // register state for last temperature
     val lastTempDescriptor = new ValueStateDescriptor[Double]("lastTemp", classOf[Double])
-    // obtain the state handle
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
+    // register state for last timer
+    val timestampDescriptor: ValueStateDescriptor[Long] =
+      new ValueStateDescriptor[Long]("timestampState", createTypeInformation[Long])
+    lastTimerState = getRuntimeContext.getState(timestampDescriptor)
   }
 
-  override def flatMap(in: SensorReading, out: Collector[(String, Double, Double)]): Unit = {
+  override def processElement(
+      in: SensorReading,
+      ctx: ProcessFunction[SensorReading, (String, Double, Double)]#Context,
+      out: Collector[(String, Double, Double)]) = {
+
+    // get current watermark and add one hour
+    val checkTimestamp = ctx.timerService().currentWatermark() + (3600 * 1000)
+    // register new timer. only one timer per timestamp will be registered
+    ctx.timerService().registerEventTimeTimer(checkTimestamp)
+    // update timestamp of last timer
+    lastTimerState.update(checkTimestamp)
 
     // fetch the last temperature from state
     val lastTemp = lastTempState.value()
@@ -94,5 +92,20 @@ class TemperatureAlertFunction(val threshold: Double)
 
     // update lastTemp state
     this.lastTempState.update(in.temperature)
+  }
+
+  override def onTimer(
+      timestamp: Long,
+      ctx: ProcessFunction[SensorReading, (String, Double, Double)]#OnTimerContext,
+      out: Collector[(String, Double, Double)]): Unit = {
+
+    // get timestamp of last registered timer
+    val lastTimer = lastTimerState.value()
+    // check if the last registered timer fired
+    if (lastTimer != null.asInstanceOf[Long] && lastTimer == timestamp) {
+      // clear all state for the key
+      lastTempState.clear()
+      lastTimerState.clear()
+    }
   }
 }

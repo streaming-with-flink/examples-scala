@@ -1,9 +1,9 @@
-package io.github.streamingwithflink.chapter8
+package io.github.streamingwithflink.chapter7
 
 import java.util
 
 import io.github.streamingwithflink.util.{SensorReading, SensorSource, SensorTimeAssigner}
-import org.apache.flink.api.common.functions.{RichFlatMapFunction}
+import org.apache.flink.api.common.functions.RichFlatMapFunction
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.checkpoint.ListCheckpointed
@@ -35,7 +35,7 @@ object OperatorListStateFunction {
       // assign timestamps and watermarks which are required for event time
       .assignTimestampsAndWatermarks(new SensorTimeAssigner)
 
-    val highTempCounts: DataStream[(Int, Long)] = sensorData.flatMap(new HighTempCounter(120.0))
+    val highTempCounts: DataStream[(Int, Long)] = sensorData.flatMap(new HighTempCounterOpState(120.0))
 
     // print result stream to standard out
     highTempCounts.print()
@@ -50,7 +50,7 @@ object OperatorListStateFunction {
   *
   * @param threshold The high temperature threshold.
   */
-class HighTempCounter(val threshold: Double)
+class HighTempCounterOpState(val threshold: Double)
     extends RichFlatMapFunction[SensorReading, (Int, Long)]
     with ListCheckpointed[java.lang.Long] {
 

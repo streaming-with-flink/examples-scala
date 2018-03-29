@@ -1,4 +1,4 @@
-package io.github.streamingwithflink.chapter8
+package io.github.streamingwithflink.chapter7
 
 import java.util.concurrent.CompletableFuture
 

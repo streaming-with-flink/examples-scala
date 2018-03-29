@@ -1,4 +1,4 @@
-package io.github.streamingwithflink.chapter8
+package io.github.streamingwithflink.chapter7
 
 import io.github.streamingwithflink.util.{SensorReading, SensorSource, SensorTimeAssigner}
 import org.apache.flink.api.common.state.{MapStateDescriptor, ValueState, ValueStateDescriptor}
