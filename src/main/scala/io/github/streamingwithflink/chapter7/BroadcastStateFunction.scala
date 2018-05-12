@@ -88,10 +88,10 @@ class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
 
   override def processBroadcastElement(
       update: ThresholdUpdate,
-      keyedCtx: KeyedBroadcastProcessFunction[String, SensorReading, ThresholdUpdate, (String, Double, Double)]#KeyedContext,
+      ctx: KeyedBroadcastProcessFunction[String, SensorReading, ThresholdUpdate, (String, Double, Double)]#Context,
       out: Collector[(String, Double, Double)]): Unit = {
 
-    val thresholds = keyedCtx.getBroadcastState(thresholdStateDescriptor)
+    val thresholds = ctx.getBroadcastState(thresholdStateDescriptor)
 
     if (update.threshold >= 1.0d) {
       // configure a new threshold of the sensor
@@ -104,11 +104,11 @@ class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
 
   override def processElement(
       reading: SensorReading,
-      keyedReadOnlyCtx: KeyedBroadcastProcessFunction[String, SensorReading, ThresholdUpdate, (String, Double, Double)]#KeyedReadOnlyContext,
+      readOnlyCtx: KeyedBroadcastProcessFunction[String, SensorReading, ThresholdUpdate, (String, Double, Double)]#ReadOnlyContext,
       out: Collector[(String, Double, Double)]): Unit = {
 
     // get read-only broadcast state
-    val thresholds = keyedReadOnlyCtx.getBroadcastState(thresholdStateDescriptor)
+    val thresholds = readOnlyCtx.getBroadcastState(thresholdStateDescriptor)
     // get threshold for sensor
     val sensorThreshold: Double = if (thresholds.contains(reading.id)) thresholds.get(reading.id) else defaultThreshold
 
