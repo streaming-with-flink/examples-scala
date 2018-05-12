@@ -41,30 +41,6 @@ under the License.
 		</repository>
 	</repositories>
 
-	<!-- 
-		
-		Execute "mvn clean package -Pbuild-jar"
-		to build a jar file out of this project!
-
-		How to use the Flink Quickstart pom:
-
-		a) Adding new dependencies:
-			You can add dependencies to the list below.
-			Please check if the maven-shade-plugin below is filtering out your dependency
-			and remove the exclude from there.
-
-		b) Build a jar for running on the cluster:
-			There are two options for creating a jar from this project
-
-			b.1) "mvn clean package" -> this will create a fat jar which contains all
-					dependencies necessary for running the jar created by this pom in a cluster.
-					The "maven-shade-plugin" excludes everything that is provided on a running Flink cluster.
-
-			b.2) "mvn clean package -Pbuild-jar" -> This will also create a fat-jar, but with much
-					nicer dependency exclusion handling. This approach is preferred and leads to
-					much cleaner jar files.
-	-->
-
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
@@ -94,6 +70,11 @@ under the License.
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-queryable-state-client-java_2.11</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-statebackend-rocksdb_2.11</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
@@ -183,19 +164,19 @@ under the License.
 									Everything else will be packaged into the fat-jar
 									-->
 									<exclude>org.apache.flink:flink-annotations</exclude>
-									<exclude>org.apache.flink:flink-shaded-hadoop1_2.10</exclude>
+									<exclude>org.apache.flink:flink-shaded-hadoop1_2.11</exclude>
 									<exclude>org.apache.flink:flink-shaded-hadoop2</exclude>
 									<exclude>org.apache.flink:flink-shaded-curator-recipes</exclude>
 									<exclude>org.apache.flink:flink-core</exclude>
 									<exclude>org.apache.flink:flink-java</exclude>
-									<exclude>org.apache.flink:flink-scala_2.10</exclude>
-									<exclude>org.apache.flink:flink-runtime_2.10</exclude>
-									<exclude>org.apache.flink:flink-optimizer_2.10</exclude>
-									<exclude>org.apache.flink:flink-clients_2.10</exclude>
-									<exclude>org.apache.flink:flink-avro_2.10</exclude>
-									<exclude>org.apache.flink:flink-examples-batch_2.10</exclude>
-									<exclude>org.apache.flink:flink-examples-streaming_2.10</exclude>
-									<exclude>org.apache.flink:flink-streaming-java_2.10</exclude>
+									<exclude>org.apache.flink:flink-scala_2.11</exclude>
+									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
+									<exclude>org.apache.flink:flink-optimizer_2.11</exclude>
+									<exclude>org.apache.flink:flink-clients_2.11</exclude>
+									<exclude>org.apache.flink:flink-avro_2.11</exclude>
+									<exclude>org.apache.flink:flink-examples-batch_2.11</exclude>
+									<exclude>org.apache.flink:flink-examples-streaming_2.11</exclude>
+									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
 
 									<!-- Also exclude very big transitive dependencies of Flink
 

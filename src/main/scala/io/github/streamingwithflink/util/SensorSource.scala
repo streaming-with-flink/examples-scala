@@ -17,7 +17,6 @@ package io.github.streamingwithflink.util
 
 import java.util.Calendar
 
-import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction
 import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext
 
@@ -29,6 +28,8 @@ import scala.util.Random
   * Each parallel instance of the source simulates 10 sensors which emit one sensor
   * reading every 100 ms.
   *
+  * Note: This is a simple data-generating source function that does not checkpoint its state.
+  * In case of a failure, the source does not replay any data.
   */
 class SensorSource extends RichParallelSourceFunction[SensorReading] {
 
