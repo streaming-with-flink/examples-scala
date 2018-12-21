@@ -35,7 +35,7 @@ object StatefulProcessFunction {
     val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
     val alerts: DataStream[(String, Double, Double)] = keyedSensorData
-      .process(new SelfCleaningTemperatureAlertFunction(1.1))
+      .process(new SelfCleaningTemperatureAlertFunction(1.5))
 
     // print result stream to standard out
     alerts.print()
@@ -75,18 +75,21 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
       ctx: ProcessFunction[SensorReading, (String, Double, Double)]#Context,
       out: Collector[(String, Double, Double)]) = {
 
-    // get current watermark and add one hour
-    val checkTimestamp = ctx.timerService().currentWatermark() + (3600 * 1000)
-    // register new timer. only one timer per timestamp will be registered
-    ctx.timerService().registerEventTimeTimer(checkTimestamp)
+    // compute timestamp of new timer as timestamp of record plus one hour
+    val newTimer = ctx.timestamp() + (3600 * 1000)
+    // get timestamp of current timer
+    val curTimer = lastTimerState.value()
+    // delete previous timer and register new timer
+    ctx.timerService().deleteEventTimeTimer(curTimer)
+    ctx.timerService().registerEventTimeTimer(newTimer)
     // update timestamp of last timer
-    lastTimerState.update(checkTimestamp)
+    lastTimerState.update(newTimer)
 
     // fetch the last temperature from state
     val lastTemp = lastTempState.value()
     // check if we need to emit an alert
     if (lastTemp > 0.0d && (in.temperature / lastTemp) > threshold) {
-      // temperature increased by more than the threshold
+      // temperature increased by more than the thresholdTimer
       out.collect((in.id, in.temperature, lastTemp))
     }
 
@@ -99,13 +102,8 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
       ctx: ProcessFunction[SensorReading, (String, Double, Double)]#OnTimerContext,
       out: Collector[(String, Double, Double)]): Unit = {
 
-    // get timestamp of last registered timer
-    val lastTimer = lastTimerState.value()
-    // check if the last registered timer fired
-    if (lastTimer != null.asInstanceOf[Long] && lastTimer == timestamp) {
-      // clear all state for the key
-      lastTempState.clear()
-      lastTimerState.clear()
-    }
+    // clear all state for the key
+    lastTempState.clear()
+    lastTimerState.clear()
   }
 }
