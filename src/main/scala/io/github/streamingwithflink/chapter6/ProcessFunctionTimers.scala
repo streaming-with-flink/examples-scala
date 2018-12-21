@@ -64,11 +64,13 @@ class TempIncreaseAlertFunction
     // update last temperature
     lastTemp.update(r.temperature)
 
+    val curTimerTimestamp = currentTimer.value();
     if (prevTemp == 0.0 || r.temperature < prevTemp) {
-      // temperature decreased. Invalidate current timer
-      currentTimer.update(0L)
+      // temperature decreased. Delete current timer.
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
+      currentTimer.clear()
     }
-    else if (r.temperature > prevTemp && currentTimer.value() == 0) {
+    else if (r.temperature > prevTemp && curTimerTimestamp == 0) {
       // temperature increased and we have not set a timer yet.
       // set timer for now + 1 second
       val timerTs = ctx.timerService().currentProcessingTime() + 1000
@@ -83,12 +85,9 @@ class TempIncreaseAlertFunction
       ctx: KeyedProcessFunction[String, SensorReading, String]#OnTimerContext,
       out: Collector[String]): Unit = {
 
-    // check if firing timer is current timer
-    if (ts == currentTimer.value()) {
       out.collect("Temperature of sensor '" + ctx.getCurrentKey +
         "' monotonically increased for 1 second.")
       // reset current timer
-      currentTimer.update(0)
-    }
+      currentTimer.clear()
   }
 }

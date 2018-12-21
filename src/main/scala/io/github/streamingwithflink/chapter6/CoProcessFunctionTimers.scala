@@ -81,8 +81,13 @@ class ReadingFilter
     forwardingEnabled.update(true)
     // set disable forward timer
     val timerTimestamp = ctx.timerService().currentProcessingTime() + switch._2
-    ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
-    disableTimer.update(timerTimestamp)
+    val curTimerTimestamp = disableTimer.value()
+    if (timerTimestamp > curTimerTimestamp) {
+      // remove current timer and register new timer
+      ctx.timerService().deleteEventTimeTimer(curTimerTimestamp)
+      ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
+      disableTimer.update(timerTimestamp)
+    }
   }
 
   override def onTimer(
@@ -90,10 +95,8 @@ class ReadingFilter
       ctx: CoProcessFunction[SensorReading, (String, Long), SensorReading]#OnTimerContext,
       out: Collector[SensorReading]): Unit = {
 
-    if (ts == disableTimer.value()) {
-      // remove all state. Forward switch will be false by default.
-      forwardingEnabled.clear()
-      disableTimer.clear()
-    }
+    // remove all state. Forward switch will be false by default.
+    forwardingEnabled.clear()
+    disableTimer.clear()
   }
 }
