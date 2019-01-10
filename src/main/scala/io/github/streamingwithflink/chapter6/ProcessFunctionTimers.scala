@@ -85,9 +85,9 @@ class TempIncreaseAlertFunction
       ctx: KeyedProcessFunction[String, SensorReading, String]#OnTimerContext,
       out: Collector[String]): Unit = {
 
-      out.collect("Temperature of sensor '" + ctx.getCurrentKey +
-        "' monotonically increased for 1 second.")
-      // reset current timer
-      currentTimer.clear()
+    out.collect("Temperature of sensor '" + ctx.getCurrentKey +
+      "' monotonically increased for 1 second.")
+    // reset current timer
+    currentTimer.clear()
   }
 }

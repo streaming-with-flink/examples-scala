@@ -10,10 +10,6 @@ import org.apache.flink.util.Collector
 
 object SideOutputs {
 
-  // define a side output tag
-  val freezingAlarmOutput: OutputTag[String] =
-    new OutputTag[String]("freezing-alarms")
-
   def main(args: Array[String]): Unit = {
 
     // set up the streaming execution environment
@@ -40,7 +36,7 @@ object SideOutputs {
 
     // retrieve and print the freezing alarms
     monitoredReadings
-      .getSideOutput(freezingAlarmOutput)
+      .getSideOutput(new OutputTag[String]("freezing-alarms"))
       .print()
 
     // print the main output
@@ -53,13 +49,17 @@ object SideOutputs {
 /** Emits freezing alarms to a side output for readings with a temperature below 32F. */
 class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
 
+  // define a side output tag
+  lazy val freezingAlarmOutput: OutputTag[String] =
+    new OutputTag[String]("freezing-alarms")
+
   override def processElement(
       r: SensorReading,
       ctx: ProcessFunction[SensorReading, SensorReading]#Context,
       out: Collector[SensorReading]): Unit = {
     // emit freezing alarm if temperature is below 32F.
     if (r.temperature < 32.0) {
-      ctx.output(SideOutputs.freezingAlarmOutput, s"Freezing Alarm for ${r.id}")
+      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${r.id}")
     }
     // forward all readings to the regular output
     out.collect(r)
