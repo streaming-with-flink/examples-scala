@@ -60,13 +60,6 @@ under the License.
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- RocksDB state backend -->
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-statebackend-rocksdb_${scala.binary.version}</artifactId>
-			<version>${flink.version}</version>
-		</dependency>
-
 		<!-- runtime-web dependency is need to start web UI from IDE -->
 		<dependency>
 			<groupId>org.apache.flink</groupId>
@@ -87,11 +80,16 @@ under the License.
 			<version>${flink.version}</version>
 		</dependency>
 
-		<!-- Derby is used for a sink connector example. -->
+		<!--
+		Derby is used for a sink connector example.
+		Example only works in local mode, i.e, it is not possible to submit it to a running cluster.
+		The dependency is set to provided to reduce the size of the JAR file.
+		-->
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.13.1.1</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Logging -->
@@ -128,6 +126,8 @@ under the License.
 							<artifactSet>
 								<excludes>
 									<exclude>org.apache.flink:force-shading</exclude>
+									<exlude>org.apache.flink:flink-shaded-netty</exlude>
+									<exlude>org.apache.flink:flink-shaded-guava</exlude>
 									<exclude>com.google.code.findbugs:jsr305</exclude>
 									<exclude>org.slf4j:*</exclude>
 									<exclude>log4j:*</exclude>
@@ -281,6 +281,12 @@ under the License.
 					<groupId>org.apache.flink</groupId>
 					<artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
 					<version>${flink.version}</version>
+					<scope>compile</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.derby</groupId>
+					<artifactId>derby</artifactId>
+					<version>10.13.1.1</version>
 					<scope>compile</scope>
 				</dependency>
 			</dependencies>
