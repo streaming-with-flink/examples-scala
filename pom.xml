@@ -22,7 +22,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>io.github.streamingwithflink</groupId>
-	<artifactId>examples-scala_2.11</artifactId>
+	<artifactId>examples-scala_2.12</artifactId>
 	<version>0.1</version>
 	<packaging>jar</packaging>
 
@@ -31,43 +31,43 @@ under the License.
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<flink.version>1.6.2</flink.version>
+		<flink.version>1.7.1</flink.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-scala_2.11</artifactId>
+			<artifactId>flink-scala_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-scala_2.11</artifactId>
+			<artifactId>flink-streaming-scala_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-clients_2.11</artifactId>
+			<artifactId>flink-clients_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-runtime-web_2.11</artifactId>
+			<artifactId>flink-runtime-web_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-queryable-state-runtime_2.11</artifactId>
+			<artifactId>flink-queryable-state-runtime_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-queryable-state-client-java_2.11</artifactId>
+			<artifactId>flink-queryable-state-client-java_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-statebackend-rocksdb_2.11</artifactId>
+			<artifactId>flink-statebackend-rocksdb_2.12</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
 		<dependency>
@@ -92,19 +92,19 @@ under the License.
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-scala_2.11</artifactId>
+					<artifactId>flink-scala_2.12</artifactId>
 					<version>${flink.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-streaming-scala_2.11</artifactId>
+					<artifactId>flink-streaming-scala_2.12</artifactId>
 					<version>${flink.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-clients_2.11</artifactId>
+					<artifactId>flink-clients_2.12</artifactId>
 					<version>${flink.version}</version>
 					<scope>provided</scope>
 				</dependency>
@@ -162,19 +162,19 @@ under the License.
 									Everything else will be packaged into the fat-jar
 									-->
 									<exclude>org.apache.flink:flink-annotations</exclude>
-									<exclude>org.apache.flink:flink-shaded-hadoop1_2.11</exclude>
+									<exclude>org.apache.flink:flink-shaded-hadoop1_2.12</exclude>
 									<exclude>org.apache.flink:flink-shaded-hadoop2</exclude>
 									<exclude>org.apache.flink:flink-shaded-curator-recipes</exclude>
 									<exclude>org.apache.flink:flink-core</exclude>
 									<exclude>org.apache.flink:flink-java</exclude>
-									<exclude>org.apache.flink:flink-scala_2.11</exclude>
-									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
-									<exclude>org.apache.flink:flink-optimizer_2.11</exclude>
-									<exclude>org.apache.flink:flink-clients_2.11</exclude>
-									<exclude>org.apache.flink:flink-avro_2.11</exclude>
-									<exclude>org.apache.flink:flink-examples-batch_2.11</exclude>
-									<exclude>org.apache.flink:flink-examples-streaming_2.11</exclude>
-									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
+									<exclude>org.apache.flink:flink-scala_2.12</exclude>
+									<exclude>org.apache.flink:flink-runtime_2.12</exclude>
+									<exclude>org.apache.flink:flink-optimizer_2.12</exclude>
+									<exclude>org.apache.flink:flink-clients_2.12</exclude>
+									<exclude>org.apache.flink:flink-avro_2.12</exclude>
+									<exclude>org.apache.flink:flink-examples-batch_2.12</exclude>
+									<exclude>org.apache.flink:flink-examples-streaming_2.12</exclude>
+									<exclude>org.apache.flink:flink-streaming-java_2.12</exclude>
 
 									<!-- Also exclude very big transitive dependencies of Flink
 

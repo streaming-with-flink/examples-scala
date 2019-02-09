@@ -82,7 +82,7 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     // delete previous timer and register new timer
     ctx.timerService().deleteEventTimeTimer(curTimer)
     ctx.timerService().registerEventTimeTimer(newTimer)
-    // update timestamp of last timer
+    // update timer timestamp state
     lastTimerState.update(newTimer)
 
     // fetch the last temperature from state
