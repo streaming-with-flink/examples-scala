@@ -5,7 +5,7 @@ import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.ProcessFunction
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.streaming.api.scala.{DataStream, KeyedStream, StreamExecutionEnvironment}
 import org.apache.flink.util.Collector
 
@@ -13,7 +13,7 @@ object StatefulProcessFunction {
 
   /** main() defines and executes the DataStream program */
   def main(args: Array[String]) {
-
+    
     // set up the streaming execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
@@ -46,7 +46,7 @@ object StatefulProcessFunction {
 }
 
 /**
-  * The function emits an alert if the temperature measurement of a sensor increased by more than
+  * The function emits an alert if the temperature measurement of a sensor changed by more than
   * a configured threshold compared to the last reading.
   *
   * The function removes the state of a sensor if it did not receive an update within 1 hour.
@@ -54,7 +54,7 @@ object StatefulProcessFunction {
   * @param threshold The threshold to raise an alert.
   */
 class SelfCleaningTemperatureAlertFunction(val threshold: Double)
-    extends ProcessFunction[SensorReading, (String, Double, Double)] {
+    extends KeyedProcessFunction[String, SensorReading, (String, Double, Double)] {
 
   // the state handle object
   private var lastTempState: ValueState[Double] = _
@@ -71,11 +71,11 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
   }
 
   override def processElement(
-      in: SensorReading,
-      ctx: ProcessFunction[SensorReading, (String, Double, Double)]#Context,
-      out: Collector[(String, Double, Double)]) = {
+      reading: SensorReading,
+      ctx: KeyedProcessFunction[String, SensorReading, (String, Double, Double)]#Context,
+      out: Collector[(String, Double, Double)]): Unit = {
 
-    // compute timestamp of new timer as timestamp of record plus one hour
+    // compute timestamp of new clean up timer as record timestamp + one hour
     val newTimer = ctx.timestamp() + (3600 * 1000)
     // get timestamp of current timer
     val curTimer = lastTimerState.value()
@@ -88,18 +88,19 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     // fetch the last temperature from state
     val lastTemp = lastTempState.value()
     // check if we need to emit an alert
-    if (lastTemp > 0.0d && (in.temperature / lastTemp) > threshold) {
+    val tempDiff = (reading.temperature - lastTemp).abs
+    if (tempDiff > threshold) {
       // temperature increased by more than the thresholdTimer
-      out.collect((in.id, in.temperature, lastTemp))
+      out.collect((reading.id, reading.temperature, tempDiff))
     }
 
     // update lastTemp state
-    this.lastTempState.update(in.temperature)
+    this.lastTempState.update(reading.temperature)
   }
 
   override def onTimer(
       timestamp: Long,
-      ctx: ProcessFunction[SensorReading, (String, Double, Double)]#OnTimerContext,
+      ctx: KeyedProcessFunction[String, SensorReading, (String, Double, Double)]#OnTimerContext,
       out: Collector[(String, Double, Double)]): Unit = {
 
     // clear all state for the key

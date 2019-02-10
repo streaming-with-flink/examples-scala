@@ -36,8 +36,10 @@ object BroadcastStateFunction {
     // define a stream of thresholds
     val thresholds: DataStream[ThresholdUpdate] = env.fromElements(
       ThresholdUpdate("sensor_1", 5.0d),
-      ThresholdUpdate("sensor_2", 2.0d),
-      ThresholdUpdate("sensor_1", 1.2d))
+      ThresholdUpdate("sensor_2", 0.9d),
+      ThresholdUpdate("sensor_3", 0.5d),
+      ThresholdUpdate("sensor_1", 1.2d),  // update threshold for sensor_1
+      ThresholdUpdate("sensor_3", 0.0d))  // disable threshold for sensor_3
 
     val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
@@ -48,7 +50,7 @@ object BroadcastStateFunction {
 
     val alerts: DataStream[(String, Double, Double)] = keyedSensorData
       .connect(broadcastThresholds)
-      .process(new UpdatableTemperatureAlertFunction(4.0d))
+      .process(new UpdatableTemperatureAlertFunction())
 
     // print result stream to standard out
     alerts.print()
@@ -61,13 +63,10 @@ object BroadcastStateFunction {
 case class ThresholdUpdate(id: String, threshold: Double)
 
 /**
-  * The function emits an alert if the temperature measurement of a sensor increased by more than
+  * The function emits an alert if the temperature measurement of a sensor changed by more than
   * a threshold compared to the last reading. The thresholds are configured per sensor by a separate stream.
-  * If no dedicated threshold is configured for a sensor, a default threshold is applied.
-  *
-  * @param defaultThreshold The default threshold to raise an alert.
   */
-class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
+class UpdatableTemperatureAlertFunction()
     extends KeyedBroadcastProcessFunction[String, SensorReading, ThresholdUpdate, (String, Double, Double)] {
 
   private lazy val thresholdStateDescriptor =
@@ -81,9 +80,6 @@ class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
     val lastTempDescriptor = new ValueStateDescriptor[Double]("lastTemp", classOf[Double])
     // obtain the state handle
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
-
-    // TODO: This is probably a bug that should be fixed in Flink
-    thresholdStateDescriptor.initializeSerializerUnlessSet(getRuntimeContext.getExecutionConfig)
   }
 
   override def processBroadcastElement(
@@ -93,7 +89,7 @@ class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
 
     val thresholds = ctx.getBroadcastState(thresholdStateDescriptor)
 
-    if (update.threshold >= 1.0d) {
+    if (update.threshold != 0.0d) {
       // configure a new threshold of the sensor
       thresholds.put(update.id, update.threshold)
     } else {
@@ -109,15 +105,19 @@ class UpdatableTemperatureAlertFunction(val defaultThreshold: Double)
 
     // get read-only broadcast state
     val thresholds = readOnlyCtx.getBroadcastState(thresholdStateDescriptor)
-    // get threshold for sensor
-    val sensorThreshold: Double = if (thresholds.contains(reading.id)) thresholds.get(reading.id) else defaultThreshold
+    // check if we have a threshold
+    if (thresholds.contains(reading.id)) {
+      // get threshold for sensor
+      val sensorThreshold: Double = thresholds.get(reading.id)
 
-    // fetch the last temperature from state
-    val lastTemp = lastTempState.value()
-    // check if we need to emit an alert
-    if (lastTemp > 0.0d && (reading.temperature / lastTemp) > sensorThreshold) {
-      // temperature increased by more than the threshold
-      out.collect((reading.id, reading.temperature, lastTemp))
+      // fetch the last temperature from state
+      val lastTemp = lastTempState.value()
+      // check if we need to emit an alert
+      val tempDiff = (reading.temperature - lastTemp).abs
+      if (tempDiff > sensorThreshold) {
+        // temperature increased by more than the threshold
+        out.collect((reading.id, reading.temperature, tempDiff))
+      }
     }
 
     // update lastTemp state
