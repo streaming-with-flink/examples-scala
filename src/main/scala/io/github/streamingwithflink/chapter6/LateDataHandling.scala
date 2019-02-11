@@ -47,7 +47,7 @@ object LateDataHandling {
     // Select and uncomment on of the lines below to demonstrate a strategy.
 
     // 1. Filter out late readings (to a side output) using a ProcessFunction
-//    filterLateReadings(outOfOrderReadings)
+    filterLateReadings(outOfOrderReadings)
     // 2. Redirect late readings to a side output in a window operator
 //    sideOutputLateEventsWindow(outOfOrderReadings)
     // 3. Update results when late readings are received in a window operator
