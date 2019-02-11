@@ -109,7 +109,7 @@ object TemperatureDashboard {
       "maxTemperature",
       key,
       Types.STRING,
-      new ValueStateDescriptor[(String, Double)]("", createTypeInformation[(String, Double)]))
+      new ValueStateDescriptor[(String, Double)]("", Types.TUPLE[(String, Double)]))
   }
 
 }

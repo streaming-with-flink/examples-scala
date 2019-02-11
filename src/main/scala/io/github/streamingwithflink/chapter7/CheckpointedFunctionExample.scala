@@ -67,15 +67,11 @@ class HighTempCounter(val threshold: Double)
 
   override def initializeState(initContext: FunctionInitializationContext): Unit = {
     // initialize keyed state
-    val keyCntDescriptor = new ValueStateDescriptor[Long](
-      "keyedCnt",
-      createTypeInformation[Long])
+    val keyCntDescriptor = new ValueStateDescriptor[Long]("keyedCnt", classOf[Long])
     keyedCntState = initContext.getKeyedStateStore.getState(keyCntDescriptor)
 
     // initialize operator state
-    val opCntDescriptor = new ListStateDescriptor[Long](
-      "opCnt",
-      createTypeInformation[Long])
+    val opCntDescriptor = new ListStateDescriptor[Long]("opCnt", classOf[Long])
     opCntState = initContext.getOperatorStateStore.getListState(opCntDescriptor)
     // initialize local variable with state
     opHighTempCnt = opCntState.get().asScala.sum

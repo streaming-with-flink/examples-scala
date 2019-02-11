@@ -66,7 +66,7 @@ class SelfCleaningTemperatureAlertFunction(val threshold: Double)
     lastTempState = getRuntimeContext.getState[Double](lastTempDescriptor)
     // register state for last timer
     val timestampDescriptor: ValueStateDescriptor[Long] =
-      new ValueStateDescriptor[Long]("timestampState", createTypeInformation[Long])
+      new ValueStateDescriptor[Long]("timestampState", classOf[Long])
     lastTimerState = getRuntimeContext.getState(timestampDescriptor)
   }
 

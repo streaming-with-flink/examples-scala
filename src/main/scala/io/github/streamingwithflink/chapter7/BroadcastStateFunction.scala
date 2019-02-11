@@ -90,10 +90,10 @@ class UpdatableTemperatureAlertFunction()
     val thresholds = ctx.getBroadcastState(thresholdStateDescriptor)
 
     if (update.threshold != 0.0d) {
-      // configure a new threshold of the sensor
+      // configure a new threshold for the sensor
       thresholds.put(update.id, update.threshold)
     } else {
-      // remove sensor specific threshold
+      // remove threshold for the sensor
       thresholds.remove(update.id)
     }
   }

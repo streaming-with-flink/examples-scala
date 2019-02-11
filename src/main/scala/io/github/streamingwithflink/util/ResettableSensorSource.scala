@@ -17,7 +17,6 @@ package io.github.streamingwithflink.util
 
 import java.util.Calendar
 
-import org.apache.flink.api.scala._
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
@@ -92,9 +91,7 @@ class ResettableSensorSource extends RichParallelSourceFunction[SensorReading] w
 
     // define state of sink as union list operator state
     this.sensorsState = ctx.getOperatorStateStore.getUnionListState(
-      new ListStateDescriptor[SensorReading](
-        "sensorsState",
-        createTypeInformation[SensorReading]))
+      new ListStateDescriptor[SensorReading]("sensorsState", classOf[SensorReading]))
 
     // get iterator over state
     val sensorsStateIt = sensorsState.get().iterator()

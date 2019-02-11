@@ -95,7 +95,7 @@ class OneSecondIntervalTrigger
 
     // firstSeen will be false if not set yet
     val firstSeen: ValueState[Boolean] = ctx.getPartitionedState(
-      new ValueStateDescriptor[Boolean]("firstSeen", createTypeInformation[Boolean]))
+      new ValueStateDescriptor[Boolean]("firstSeen", classOf[Boolean]))
 
     // register initial timer only for first element
     if (!firstSeen.value()) {
@@ -142,7 +142,7 @@ class OneSecondIntervalTrigger
 
     // clear trigger state
     val firstSeen: ValueState[Boolean] = ctx.getPartitionedState(
-      new ValueStateDescriptor[Boolean]("firstSeen", createTypeInformation[Boolean]))
+      new ValueStateDescriptor[Boolean]("firstSeen", classOf[Boolean]))
     firstSeen.clear()
   }
 }
