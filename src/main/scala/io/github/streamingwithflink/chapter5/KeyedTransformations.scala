@@ -44,14 +44,14 @@ object KeyedTransformations {
     val keyed: KeyedStream[SensorReading, String] = readings
       .keyBy(_.id)
 
-    // a rolling reduce that computes the highest timestamp of the each group's readings
-    val reducedSensors = keyed
+    // a rolling reduce that computes the highest temperature of each sensor and
+    // the corresponding timestamp
+    val maxTempPerSensor: DataStream[SensorReading] = keyed
       .reduce((r1, r2) => {
-        val highestTimestamp = Math.max(r1.timestamp, r2.timestamp)
-        SensorReading(r1.id, highestTimestamp, r1.temperature)
+        if (r1.temperature > r2.temperature) r1 else r2
       })
 
-    reducedSensors.print()
+    maxTempPerSensor.print()
 
     // execute application
     env.execute("Keyed Transformations Example")
