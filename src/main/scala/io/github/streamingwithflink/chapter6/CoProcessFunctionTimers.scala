@@ -84,7 +84,7 @@ class ReadingFilter
     val curTimerTimestamp = disableTimer.value()
     if (timerTimestamp > curTimerTimestamp) {
       // remove current timer and register new timer
-      ctx.timerService().deleteEventTimeTimer(curTimerTimestamp)
+      ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
       ctx.timerService().registerProcessingTimeTimer(timerTimestamp)
       disableTimer.update(timerTimestamp)
     }
