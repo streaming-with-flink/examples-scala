@@ -64,8 +64,12 @@ class TempIncreaseAlertFunction
     // update last temperature
     lastTemp.update(r.temperature)
 
-    val curTimerTimestamp = currentTimer.value();
-    if (prevTemp == 0.0 || r.temperature < prevTemp) {
+    val curTimerTimestamp = currentTimer.value()
+    if (prevTemp == 0.0) {
+      // first sensor reading for this key.
+      // we cannot compare it with a previous value.
+    }
+    else if (r.temperature < prevTemp) {
       // temperature decreased. Delete current timer.
       ctx.timerService().deleteProcessingTimeTimer(curTimerTimestamp)
       currentTimer.clear()
